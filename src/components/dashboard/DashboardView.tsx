@@ -651,7 +651,7 @@ export const DashboardView: React.FC = () => {
 
           {/* Quick Third-Party Disclaimer Banner */}
           <div className="p-4 rounded-xl bg-slate-950 border border-slate-800/80 text-xs text-slate-400 leading-relaxed">
-            <span className="text-white font-semibold">Important SEO Principle:</span> Moz DA, Ahrefs DR, Semrush AS, and Majestic TF/CF are <strong className="text-slate-300 font-medium">third-party comparative metrics</strong>, not official Google ranking factors. RankPulse helps you evaluate multiple real signals (traffic, link ratios, indexation) to prevent single-metric bias.
+            <span className="text-white font-semibold">Notice:</span> Moz DA, Ahrefs DR, Semrush AS, and Majestic TF/CF are comparative third-party metrics, not official Google ranking factors. Displayed values are curated sample verification records. Connect an external SEO API for live refresh.
           </div>
         </div>
       </div>

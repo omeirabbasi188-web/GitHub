@@ -227,11 +227,7 @@ export const SeoAnalysisView: React.FC = () => {
       <div className="p-4 rounded-xl bg-slate-950 border border-indigo-900/50 flex items-start gap-3 text-xs text-slate-300">
         <Info className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
         <div className="leading-relaxed">
-          <strong className="text-white">Core SEO Principle:</strong> Moz DA, Ahrefs DR, Semrush AS, and Majestic TF/CF are strictly{' '}
-          <span className="text-indigo-300 font-semibold underline decoration-indigo-400/50">
-            third-party comparative link metrics
-          </span>
-          . They are NOT official Google ranking algorithms. A strong guest post opportunity combines real verified organic search traffic, low spam risk, contextual placement, and indexation stability alongside these authority signals.
+          <strong className="text-white">Notice:</strong> Moz DA, Ahrefs DR, Semrush AS, and Majestic TF/CF are comparative third-party metrics, not official Google ranking factors. Displayed values are curated sample verification records. Connect an external SEO API for live refresh. A strong guest post opportunity combines real verified organic search traffic, low spam risk, contextual placement, and indexation stability alongside these authority signals.
         </div>
       </div>
 

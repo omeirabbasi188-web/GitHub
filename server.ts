@@ -1,9 +1,12 @@
 import express from 'express';
+import cors from 'cors';
+import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI, Type } from '@google/genai';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { discoveryEngine } from './src/server/discoveryEngine';
 
 dotenv.config();
 
@@ -12,6 +15,13 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = 3000;
+
+// Enable Cross-Origin Resource Sharing (CORS) for Blogger frontend & external clients
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization']
+}));
 
 app.use(express.json());
 
@@ -27,6 +37,74 @@ if (process.env.GEMINI_API_KEY) {
     }
   });
 }
+
+// 0. Real Dynamic Website Discovery API for Blogger & SaaS Frontend
+app.get('/api/discover', async (req, res) => {
+  try {
+    const rawQuery = (req.query.query as string) || (req.query.q as string) || '';
+    const page = parseInt(req.query.page as string, 10) || 1;
+    const limit = parseInt(req.query.limit as string, 10) || 25;
+    const niche = (req.query.niche as string) || undefined;
+    const country = (req.query.country as string) || undefined;
+    const status = (req.query.status as string) || undefined;
+    const linkType = (req.query.linkType as string) || undefined;
+    const postType = (req.query.postType as string) || undefined;
+    const minAs = req.query.minAs ? parseInt(req.query.minAs as string, 10) : undefined;
+    const minDr = req.query.minDr ? parseInt(req.query.minDr as string, 10) : undefined;
+    const minDa = req.query.minDa ? parseInt(req.query.minDa as string, 10) : undefined;
+    const minTraffic = req.query.minTraffic ? parseInt(req.query.minTraffic as string, 10) : undefined;
+    const maxSpam = req.query.maxSpam ? parseInt(req.query.maxSpam as string, 10) : undefined;
+    const maxPrice = req.query.maxPrice ? parseInt(req.query.maxPrice as string, 10) : undefined;
+    const sortBy = (req.query.sortBy as string) || (req.query.sortField as string) || 'as';
+    const sortOrder = (req.query.sortOrder as 'asc' | 'desc') || 'desc';
+
+    // Discover websites dynamically based on search query
+    const allDiscovered = await discoveryEngine.discoverWebsites(rawQuery || niche || 'SaaS');
+
+    // Apply filtering, sorting, and pagination
+    const response = discoveryEngine.query(
+      {
+        query: rawQuery,
+        niche,
+        country,
+        status,
+        linkType,
+        postType,
+        minAs,
+        minDr,
+        minDa,
+        minTraffic,
+        maxSpam,
+        maxPrice,
+        sortBy,
+        sortOrder,
+        page,
+        limit
+      },
+      allDiscovered
+    );
+
+    res.json(response);
+  } catch (err: any) {
+    console.error('Discovery API error:', err);
+    res.status(500).json({
+      error: 'Discovery failed',
+      message: err.message || 'Internal server error'
+    });
+  }
+});
+
+// Single Website Evidence Verifier API
+app.get('/api/verify-site', (req, res) => {
+  try {
+    const url = (req.query.url as string) || '';
+    const snippet = (req.query.snippet as string) || '';
+    const verification = discoveryEngine.verifyGuestPostEvidence(url, snippet);
+    res.json(verification);
+  } catch (err: any) {
+    res.status(500).json({ error: 'Verification failed' });
+  }
+});
 
 // 1. Natural Language Smart Search Parser
 app.post('/api/smart-search', async (req, res) => {
@@ -259,6 +337,24 @@ app.post('/api/verify-backlink', async (req, res) => {
   } catch (err: any) {
     console.error('Backlink verification error:', err);
     res.status(500).json({ error: 'Verification check failed' });
+  }
+});
+
+// 5. Download Blogger XML Theme
+app.get('/guest-posting-saas-blogger-theme.xml', (req, res) => {
+  const filePath = path.join(__dirname, 'guest-posting-saas-blogger-theme.xml');
+  res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+  res.setHeader('Content-Disposition', 'attachment; filename="guest-posting-saas-blogger-theme.xml"');
+  res.sendFile(filePath);
+});
+
+app.get('/api/theme-xml', (req, res) => {
+  try {
+    const filePath = path.join(__dirname, 'guest-posting-saas-blogger-theme.xml');
+    const content = fs.readFileSync(filePath, 'utf-8');
+    res.json({ xml: content, length: content.length });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Failed to read theme file' });
   }
 });
 

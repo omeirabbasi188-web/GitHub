@@ -317,6 +317,14 @@ export const SearchResultsTableView: React.FC = () => {
         </div>
       </div>
 
+      {/* SEO Metrics Transparency Notice */}
+      <div className="flex items-start gap-2.5 px-3.5 py-2.5 rounded-lg bg-slate-900/60 border border-slate-800/80 text-xs text-slate-400">
+        <HelpCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+        <span>
+          <strong className="text-slate-200">Notice:</strong> Moz DA, Ahrefs DR, Semrush AS, and Majestic TF/CF are comparative third-party metrics, not official Google ranking factors. Displayed values are curated sample verification records. Connect an external SEO API for live refresh.
+        </span>
+      </div>
+
       {/* Filter and Control Bar */}
       <div className="p-3.5 sm:p-4 rounded-xl bg-slate-900/90 border border-slate-800 space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">

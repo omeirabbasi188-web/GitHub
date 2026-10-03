@@ -148,6 +148,8 @@ export interface DiscoveredWebsite {
   trafficTrend: number[];
   trafficGrowthRate?: number;
   trafficCountries: { country: string; percentage: number; code: string }[];
+  trafficHistory?: { month: string; traffic: number }[];
+  trafficByCountry?: { country: string; percentage: number; code: string }[];
 
   // Link Profile
   referringDomains: number | null;

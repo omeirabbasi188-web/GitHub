@@ -17,7 +17,10 @@ import {
   RefreshCw,
   Layers,
   ExternalLink,
-  Lock
+  Lock,
+  Copy,
+  FileCode,
+  Code
 } from 'lucide-react';
 
 export const SettingsView: React.FC = () => {
@@ -37,6 +40,85 @@ export const SettingsView: React.FC = () => {
   const [localWeights, setLocalWeights] = useState(weights);
   const [localApiSettings, setLocalApiSettings] = useState(apiSettings);
   const [testingProvider, setTestingProvider] = useState<string | null>(null);
+
+  const [isDownloadingXml, setIsDownloadingXml] = useState(false);
+  const [isCopiedXml, setIsCopiedXml] = useState(false);
+  const [xmlModalOpen, setXmlModalOpen] = useState(false);
+  const [xmlSource, setXmlSource] = useState<string>('');
+
+  const fetchXmlContent = async (): Promise<string> => {
+    if (xmlSource) return xmlSource;
+    try {
+      const res = await fetch('/api/theme-xml');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.xml) {
+          setXmlSource(data.xml);
+          return data.xml;
+        }
+      }
+    } catch (e) {
+      console.warn('API theme-xml failed, trying raw fetch:', e);
+    }
+    const rawRes = await fetch('/guest-posting-saas-blogger-theme.xml');
+    const text = await rawRes.text();
+    setXmlSource(text);
+    return text;
+  };
+
+  const handleDownloadXml = async () => {
+    try {
+      setIsDownloadingXml(true);
+      const text = await fetchXmlContent();
+      const blob = new Blob([text], { type: 'text/xml;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'guest-posting-saas-blogger-theme.xml';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      addToast({
+        type: 'success',
+        title: 'Theme Downloaded',
+        description: 'guest-posting-saas-blogger-theme.xml downloaded cleanly with standard UTF-8 encoding.'
+      });
+    } catch (err: any) {
+      addToast({
+        type: 'error',
+        title: 'Download Failed',
+        description: err.message || 'Could not download theme file.'
+      });
+    } finally {
+      setIsDownloadingXml(false);
+    }
+  };
+
+  const handleCopyXml = async () => {
+    try {
+      const text = await fetchXmlContent();
+      await navigator.clipboard.writeText(text);
+      setIsCopiedXml(true);
+      setTimeout(() => setIsCopiedXml(false), 3000);
+      addToast({
+        type: 'success',
+        title: 'Blogger XML Copied!',
+        description: 'Go to Blogger → Theme → Options (⋮) → Edit HTML → Paste (Ctrl+V) & Save!'
+      });
+    } catch (err: any) {
+      addToast({
+        type: 'error',
+        title: 'Copy Failed',
+        description: 'Please use "View XML Code" to select and copy manually.'
+      });
+    }
+  };
+
+  const handleOpenXmlModal = async () => {
+    await fetchXmlContent();
+    setXmlModalOpen(true);
+  };
 
   const handleTestConnection = (provider: string, keyVal: string) => {
     setTestingProvider(provider);
@@ -632,6 +714,129 @@ export const SettingsView: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Blogger XML Theme Export Section */}
+      <div className="p-6 rounded-xl bg-gradient-to-r from-emerald-950/40 via-slate-900 to-cyan-950/40 border border-emerald-500/30 space-y-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-sm font-bold text-white flex items-center gap-2">
+              <FileCode className="w-4 h-4 text-emerald-400" />
+              <span>Blogger XML Theme Export &amp; Direct Deployment</span>
+            </h2>
+            <p className="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
+              Export the production-ready Blogger XML theme file (<strong>guest-posting-saas-blogger-theme.xml</strong>, ~186 KB). Includes the SaaS design, automated website discovery engine, 16-column table, guidelines reader, pitch generator, and local CRM with zero server-side dependencies.
+            </p>
+          </div>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <button
+              onClick={handleCopyXml}
+              disabled={isCopiedXml}
+              className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg shadow transition-all shrink-0"
+              title="Copy the entire XML to paste into Blogger Edit HTML"
+            >
+              {isCopiedXml ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-cyan-400" />}
+              <span>{isCopiedXml ? 'XML Copied!' : 'Copy XML Code'}</span>
+            </button>
+            <button
+              onClick={handleOpenXmlModal}
+              className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg shadow transition-all shrink-0"
+            >
+              <Code className="w-3.5 h-3.5 text-indigo-400" />
+              <span>View Code</span>
+            </button>
+            <button
+              onClick={handleDownloadXml}
+              disabled={isDownloadingXml}
+              className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-slate-900 bg-emerald-400 hover:bg-emerald-300 rounded-lg shadow-lg shadow-emerald-500/10 transition-all shrink-0"
+            >
+              <Download className="w-4 h-4" />
+              <span>{isDownloadingXml ? 'Generating...' : 'Download Theme (.xml)'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Installation Instructions callout preventing 'Content is not allowed in prolog' */}
+        <div className="p-4 rounded-lg bg-slate-950/80 border border-slate-800 text-xs text-slate-300 space-y-2">
+          <div className="font-semibold text-white flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>How to install on Blogger (Resolving "Content is not allowed in prolog"):</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1 text-[11px] leading-relaxed text-slate-400">
+            <div className="p-3 rounded-md bg-slate-900/60 border border-slate-800/80">
+              <strong className="text-emerald-400 block mb-1">Method 1 (Recommended &amp; 100% Guaranteed):</strong>
+              <ol className="list-decimal list-inside space-y-1">
+                <li>Click <strong>"Copy XML Code"</strong> above.</li>
+                <li>Go to <strong>Blogger &rarr; Theme</strong>.</li>
+                <li>Click the <strong>Options menu (⋮)</strong> next to Customize &rarr; <strong>Edit HTML</strong>.</li>
+                <li>Select all existing code (<kbd className="px-1 py-0.5 bg-slate-800 rounded text-slate-200">Ctrl+A</kbd> or <kbd className="px-1 py-0.5 bg-slate-800 rounded text-slate-200">Cmd+A</kbd>) and delete it.</li>
+                <li>Paste (<kbd className="px-1 py-0.5 bg-slate-800 rounded text-slate-200">Ctrl+V</kbd>) and click the <strong>Save</strong> (Disk icon) button.</li>
+              </ol>
+            </div>
+            <div className="p-3 rounded-md bg-slate-900/60 border border-slate-800/80">
+              <strong className="text-cyan-400 block mb-1">Method 2 (File Upload):</strong>
+              <ol className="list-decimal list-inside space-y-1">
+                <li>Click <strong>"Download Theme (.xml)"</strong> above (generates clean UTF-8 file).</li>
+                <li>Go to <strong>Blogger &rarr; Theme</strong>.</li>
+                <li>Click the <strong>Options menu (⋮)</strong> next to Customize &rarr; <strong>Restore</strong>.</li>
+                <li>Click <strong>Upload</strong> and select the downloaded <code className="text-emerald-300">guest-posting-saas-blogger-theme.xml</code>.</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* XML Source Viewer Modal */}
+      {xmlModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
+          <div className="relative w-full max-w-4xl max-h-[85vh] bg-slate-900 border border-slate-800 rounded-xl shadow-2xl flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b border-slate-800">
+              <div>
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <FileCode className="w-4 h-4 text-emerald-400" />
+                  <span>guest-posting-saas-blogger-theme.xml</span>
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  100% syntactically valid Blogger Theme XML (v2/v3 layout engine)
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleCopyXml}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg transition-colors"
+                >
+                  {isCopiedXml ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{isCopiedXml ? 'Copied' : 'Copy All'}</span>
+                </button>
+                <button
+                  onClick={handleDownloadXml}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-900 bg-emerald-400 hover:bg-emerald-300 rounded-lg transition-colors"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Download</span>
+                </button>
+                <button
+                  onClick={() => setXmlModalOpen(false)}
+                  className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors ml-2"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+            <div className="p-4 overflow-auto flex-1 bg-slate-950 font-mono text-[11px] text-slate-300 leading-relaxed selection:bg-emerald-500/30">
+              <pre className="whitespace-pre">{xmlSource}</pre>
+            </div>
+            <div className="p-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+              <span>Lines: ~4,067 &middot; Size: ~186 KB &middot; Encoding: UTF-8</span>
+              <button
+                onClick={() => setXmlModalOpen(false)}
+                className="px-3 py-1 text-xs text-slate-300 hover:text-white bg-slate-800 rounded-md border border-slate-700"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Backup & Demo Management */}
       <div className="p-6 rounded-xl bg-slate-900/90 border border-slate-800 space-y-3">

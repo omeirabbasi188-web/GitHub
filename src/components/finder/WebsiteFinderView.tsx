@@ -396,14 +396,19 @@ export const WebsiteFinderView: React.FC = () => {
         </div>
       )}
 
+      {/* SEO Metrics Notice Banner */}
+      <div className="flex items-start gap-2.5 px-3.5 py-2.5 rounded-lg bg-slate-900/60 border border-slate-800/80 text-xs text-slate-400">
+        <span className="text-emerald-400 font-bold shrink-0">Notice:</span>
+        <span>
+          Moz DA, Ahrefs DR, Semrush AS, and Majestic TF/CF are comparative third-party metrics, not official Google ranking factors. Displayed values are curated sample verification records. Connect an external SEO API for live refresh.
+        </span>
+      </div>
+
       {/* Results Count Banner */}
       <div className="flex items-center justify-between text-xs text-slate-400">
         <div>
           Showing <span className="font-semibold text-white font-mono">{filteredWebsites.length}</span> of{' '}
           <span className="font-mono">{websites.length}</span> target websites
-        </div>
-        <div className="text-[11px] text-slate-400">
-          DA, DR, AS, TF & CF are third-party comparative metrics
         </div>
       </div>
 

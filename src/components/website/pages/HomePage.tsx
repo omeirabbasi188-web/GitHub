@@ -543,6 +543,14 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
               </div>
             ))}
           </div>
+
+          {/* Third-Party SEO Disclaimer Banner */}
+          <div className="p-3.5 rounded-xl bg-slate-950/90 border border-slate-800 text-xs text-slate-400 flex items-start gap-2.5">
+            <span className="text-emerald-400 font-bold shrink-0">Notice:</span>
+            <span>
+              Moz DA, Ahrefs DR, Semrush AS, and Majestic TF/CF are comparative third-party metrics, not official Google ranking factors. Displayed values are curated sample verification records. Connect an external SEO API for live refresh.
+            </span>
+          </div>
         </div>
       </section>
 
